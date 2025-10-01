@@ -5,7 +5,7 @@ edition = "2021"
 
 [dependencies]
 # Local dependencies
-burncloud-database-core = { path = "../burncloud-database-core" }
+burncloud-database = { path = "../burncloud-database" }
 burncloud-download = { path = "../burncloud-download" }
 
 # Database

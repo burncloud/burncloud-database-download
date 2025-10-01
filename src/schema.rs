@@ -33,7 +33,7 @@ CREATE INDEX IF NOT EXISTS idx_download_tasks_updated_at ON download_tasks(updat
 "#;
 
 /// Initialize all tables
-pub async fn initialize_schema(db: &burncloud_database_core::Database) -> crate::Result<()> {
+pub async fn initialize_schema(db: &burncloud_database::Database) -> crate::Result<()> {
     db.execute_query(CREATE_DOWNLOAD_TASKS_TABLE).await?;
     db.execute_query(CREATE_DOWNLOAD_PROGRESS_TABLE).await?;
     db.execute_query(CREATE_INDEXES).await?;
@@ -54,7 +54,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_schema_initialization() {
-        use burncloud_database_core::create_in_memory_database;
+        use burncloud_database::create_in_memory_database;
 
         let db = create_in_memory_database().await.unwrap();
         let result = initialize_schema(&db).await;

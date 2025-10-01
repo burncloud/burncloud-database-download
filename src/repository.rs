@@ -3,7 +3,7 @@ use crate::{
     models::{DownloadTaskRecord, DownloadProgressRecord},
     schema::initialize_schema,
 };
-use burncloud_database_core::Database;
+use burncloud_database::Database;
 use burncloud_download::{DownloadTask, DownloadProgress, TaskId, DownloadStatus};
 use sqlx::Row;
 
@@ -204,7 +204,7 @@ impl DownloadRepository {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use burncloud_database_core::create_in_memory_database;
+    use burncloud_database::create_in_memory_database;
     use std::path::PathBuf;
 
     async fn setup_repo() -> DownloadRepository {

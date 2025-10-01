@@ -4,7 +4,7 @@
 //! download tasks and their progress to a SQLite database.
 
 use burncloud_database_download::{DownloadRepository, DownloadTask, DownloadProgress};
-use burncloud_database_core::create_in_memory_database;
+use burncloud_database::create_in_memory_database;
 use std::path::PathBuf;
 
 #[tokio::main]

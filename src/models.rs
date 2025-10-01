@@ -42,7 +42,7 @@ impl DownloadTaskRecord {
         let task_id = TaskId::from_string(&self.id)
             .map_err(|e| format!("Invalid task ID: {}", e))?;
 
-        use std::time::{SystemTime, UNIX_EPOCH};
+        use std::time::UNIX_EPOCH;
         let created = UNIX_EPOCH + std::time::Duration::from_secs(self.created_at as u64);
         let updated = UNIX_EPOCH + std::time::Duration::from_secs(self.updated_at as u64);
 

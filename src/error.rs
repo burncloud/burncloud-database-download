@@ -3,7 +3,7 @@ use thiserror::Error;
 #[derive(Error, Debug)]
 pub enum DownloadDbError {
     #[error("Database error: {0}")]
-    Database(#[from] burncloud_database_core::DatabaseError),
+    Database(#[from] burncloud_database::DatabaseError),
 
     #[error("SQLx error: {0}")]
     Sqlx(#[from] sqlx::Error),
