@@ -4,7 +4,7 @@ use crate::{
     schema::initialize_schema,
 };
 use burncloud_database::Database;
-use burncloud_download::{DownloadTask, DownloadProgress, TaskId, DownloadStatus};
+use burncloud_download_types::{DownloadTask, DownloadProgress, TaskId, DownloadStatus};
 use sqlx::Row;
 
 /// 下载任务数据库仓库

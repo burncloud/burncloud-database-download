@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
-use burncloud_download::{DownloadTask, DownloadStatus, DownloadProgress, TaskId};
+use burncloud_download_types::{DownloadTask, DownloadStatus, DownloadProgress, TaskId};
 
 /// 下载任务数据库记录
 #[derive(Debug, Clone, Serialize, Deserialize, FromRow)]

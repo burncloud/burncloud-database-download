@@ -172,7 +172,7 @@ dependencies = [
  "anyhow",
  "async-trait",
  "burncloud-database",
- "burncloud-download",
+ "burncloud-download-types",
  "chrono",
  "serde",
  "serde_json",
@@ -184,14 +184,10 @@ dependencies = [
 ]
 
 [[package]]
-name = "burncloud-download"
+name = "burncloud-download-types"
 version = "0.1.0"
 dependencies = [
- "anyhow",
- "async-trait",
  "serde",
- "thiserror",
- "tokio",
  "uuid",
 ]
 

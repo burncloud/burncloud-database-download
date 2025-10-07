@@ -6,7 +6,7 @@ edition = "2021"
 [dependencies]
 # Local dependencies
 burncloud-database = { path = "../burncloud-database" }
-burncloud-download = { path = "../burncloud-download" }
+burncloud-download-types = { path = "../burncloud-download-types" }
 
 # Database
 sqlx = { version = "0.7", features = ["runtime-tokio-rustls", "sqlite", "chrono", "uuid"] }
