@@ -1,28 +1,19 @@
 //! Verify the persisted database contents
 //!
-//! This example reads from the existing test_downloads.db file to verify
+//! This example reads from the default database to verify
 //! that data was correctly persisted.
 
 use burncloud_database_download::{DownloadRepository};
-use burncloud_database::create_database;
-use std::path::PathBuf;
+use burncloud_database::Database;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     println!("=== Verifying Persisted Database ===\n");
 
-    let db_path = PathBuf::from("./test_downloads.db");
+    println!("✓ Connecting to default database location\n");
 
-    if !db_path.exists() {
-        println!("❌ Error: Database file not found at {:?}", db_path);
-        println!("   Please run 'cargo run --example real_database' first.\n");
-        return Ok(());
-    }
-
-    println!("✓ Found database file at: {:?}\n", db_path);
-
-    // Open the existing database
-    let db = create_database(&db_path).await?;
+    // Open the default database
+    let db = Database::new().await?;
     let repo = DownloadRepository::new(db);
 
     // Read all tasks

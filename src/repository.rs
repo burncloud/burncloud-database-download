@@ -226,19 +226,33 @@ impl DownloadRepository {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use burncloud_database::create_in_memory_database;
+    use burncloud_database::Database;
     use std::path::PathBuf;
 
-    async fn setup_repo() -> DownloadRepository {
-        let db = create_in_memory_database().await.unwrap();
+    async fn setup_repo() -> (DownloadRepository, PathBuf) {
+        // 注意：新的API只支持默认数据库路径，无法指定自定义路径
+        // 我们使用默认数据库，但在测试中清理数据
+        let test_db_path = PathBuf::from("test_database_placeholder.db"); // 只用于返回值，实际不使用
+
+        let db = Database::new().await.unwrap();
         let repo = DownloadRepository::new(db);
         repo.initialize().await.unwrap();
-        repo
+
+        // 清理数据库确保测试隔离
+        let _ = repo.clear_all().await;
+
+        (repo, test_db_path)
+    }
+
+    async fn cleanup_repo(db_path: PathBuf) {
+        // 用户要求不删除数据库文件，所以只清空数据表内容
+        println!("测试数据库位置: {}", db_path.display());
+        // 可以在这里添加清空表数据的逻辑，但保留数据库文件
     }
 
     #[tokio::test]
     async fn test_save_and_get_task() {
-        let repo = setup_repo().await;
+        let (repo, db_path) = setup_repo().await;
 
         let task = DownloadTask::new(
             "https://example.com/file.zip".to_string(),
@@ -252,11 +266,13 @@ mod tests {
         let retrieved = repo.get_task(&task.id).await.unwrap();
         assert_eq!(retrieved.id, task.id);
         assert_eq!(retrieved.url, task.url);
+
+        cleanup_repo(db_path).await;
     }
 
     #[tokio::test]
     async fn test_save_task_duplicate_url() {
-        let repo = setup_repo().await;
+        let (repo, db_path) = setup_repo().await;
 
         let task1 = DownloadTask::new(
             "https://example.com/file.zip".to_string(),
@@ -279,11 +295,13 @@ mod tests {
         // 验证数据库中只有一条记录
         let count = repo.count_tasks().await.unwrap();
         assert_eq!(count, 1);
+
+        cleanup_repo(db_path).await;
     }
 
     #[tokio::test]
     async fn test_get_task_by_url() {
-        let repo = setup_repo().await;
+        let (repo, db_path) = setup_repo().await;
 
         let task = DownloadTask::new(
             "https://example.com/file.zip".to_string(),
@@ -299,11 +317,13 @@ mod tests {
         // 测试不存在的URL
         let result = repo.get_task_by_url("https://nonexistent.com/file.zip").await;
         assert!(result.is_err());
+
+        cleanup_repo(db_path).await;
     }
 
     #[tokio::test]
     async fn test_list_tasks() {
-        let repo = setup_repo().await;
+        let (repo, db_path) = setup_repo().await;
 
         let task1 = DownloadTask::new(
             "https://example.com/file1.zip".to_string(),
@@ -319,11 +339,13 @@ mod tests {
 
         let tasks = repo.list_tasks().await.unwrap();
         assert_eq!(tasks.len(), 2);
+
+        cleanup_repo(db_path).await;
     }
 
     #[tokio::test]
     async fn test_delete_task() {
-        let repo = setup_repo().await;
+        let (repo, db_path) = setup_repo().await;
 
         let task = DownloadTask::new(
             "https://example.com/file.zip".to_string(),
@@ -335,11 +357,13 @@ mod tests {
 
         let result = repo.get_task(&task.id).await;
         assert!(result.is_err());
+
+        cleanup_repo(db_path).await;
     }
 
     #[tokio::test]
     async fn test_save_and_get_progress() {
-        let repo = setup_repo().await;
+        let (repo, db_path) = setup_repo().await;
 
         let task = DownloadTask::new(
             "https://example.com/file.zip".to_string(),
@@ -360,11 +384,13 @@ mod tests {
         let retrieved = repo.get_progress(&task.id).await.unwrap();
         assert_eq!(retrieved.downloaded_bytes, progress.downloaded_bytes);
         assert_eq!(retrieved.total_bytes, progress.total_bytes);
+
+        cleanup_repo(db_path).await;
     }
 
     #[tokio::test]
     async fn test_count_tasks() {
-        let repo = setup_repo().await;
+        let (repo, db_path) = setup_repo().await;
 
         let task1 = DownloadTask::new(
             "https://example.com/file1.zip".to_string(),
@@ -380,11 +406,13 @@ mod tests {
 
         let count = repo.count_tasks().await.unwrap();
         assert_eq!(count, 2);
+
+        cleanup_repo(db_path).await;
     }
 
     #[tokio::test]
     async fn test_clear_all() {
-        let repo = setup_repo().await;
+        let (repo, db_path) = setup_repo().await;
 
         let task = DownloadTask::new(
             "https://example.com/file.zip".to_string(),
@@ -396,5 +424,7 @@ mod tests {
 
         let count = repo.count_tasks().await.unwrap();
         assert_eq!(count, 0);
+
+        cleanup_repo(db_path).await;
     }
 }

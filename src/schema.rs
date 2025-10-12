@@ -55,9 +55,9 @@ mod tests {
 
     #[tokio::test]
     async fn test_schema_initialization() {
-        use burncloud_database::create_in_memory_database;
+        use burncloud_database::Database;
 
-        let db = create_in_memory_database().await.unwrap();
+        let db = Database::new().await.unwrap();
         let result = initialize_schema(&db).await;
         assert!(result.is_ok());
     }

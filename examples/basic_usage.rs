@@ -4,16 +4,16 @@
 //! download tasks and their progress to a SQLite database.
 
 use burncloud_database_download::{DownloadRepository, DownloadTask, DownloadProgress};
-use burncloud_database::create_in_memory_database;
+use burncloud_database::Database;
 use std::path::PathBuf;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     println!("=== burncloud-database-download Basic Usage Example ===\n");
 
-    // 1. Create an in-memory database for this example
-    println!("1. Creating in-memory database...");
-    let db = create_in_memory_database().await?;
+    // 1. Create a database with the new API (uses default path)
+    println!("1. Creating database...");
+    let db = Database::new().await?;
 
     // 2. Create repository and initialize schema
     println!("2. Initializing download repository...");

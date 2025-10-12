@@ -4,18 +4,17 @@
 //! The database file will be created at ./test_downloads.db
 
 use burncloud_database_download::{DownloadRepository, DownloadTask, DownloadProgress};
-use burncloud_database::create_database;
+use burncloud_database::Database;
 use std::path::PathBuf;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     println!("=== burncloud-database-download Real Database Example ===\n");
 
-    let db_path = PathBuf::from("./test_downloads.db");
-    println!("1. Creating database at: {:?}", db_path);
+    println!("1. Creating database (using default path)...");
 
-    // Create a real file-based database
-    let db = create_database(&db_path).await?;
+    // Create a database using the new API (uses default path)
+    let db = Database::new().await?;
 
     // 2. Create repository and initialize schema
     println!("2. Initializing download repository...");
@@ -121,13 +120,12 @@ async fn main() -> anyhow::Result<()> {
     }
     println!();
 
-    println!("7. Database persisted to: {:?}", db_path);
-    println!("   You can inspect it with: sqlite3 {:?}", db_path);
-    println!("   Or query tasks with: SELECT * FROM download_tasks;\n");
+    println!("7. Database persisted to default location");
+    println!("   Note: The new API uses a default database path");
+    println!("   You can query tasks with: SELECT * FROM download_tasks;\n");
 
     println!("=== Example completed successfully! ===");
-    println!("Note: The database file {:?} has been kept for inspection.", db_path);
-    println!("Delete it manually if you want to clean up.\n");
+    println!("Note: The database file has been kept for inspection.\n");
 
     Ok(())
 }
