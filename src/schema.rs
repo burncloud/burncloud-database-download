@@ -30,6 +30,7 @@ pub const CREATE_INDEXES: &str = r#"
 CREATE INDEX IF NOT EXISTS idx_download_tasks_status ON download_tasks(status);
 CREATE INDEX IF NOT EXISTS idx_download_tasks_created_at ON download_tasks(created_at);
 CREATE INDEX IF NOT EXISTS idx_download_tasks_updated_at ON download_tasks(updated_at);
+CREATE INDEX IF NOT EXISTS idx_download_tasks_url ON download_tasks(url);
 "#;
 
 /// Initialize all tables

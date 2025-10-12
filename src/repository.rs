@@ -23,8 +23,14 @@ impl DownloadRepository {
         initialize_schema(&self.db).await
     }
 
-    /// 保存下载任务
-    pub async fn save_task(&self, task: &DownloadTask) -> Result<()> {
+    /// 保存下载任务，如果相同URL已存在则返回已存在的任务
+    pub async fn save_task(&self, task: &DownloadTask) -> Result<DownloadTask> {
+        // 首先检查是否已存在相同URL的任务
+        if let Ok(existing_task) = self.get_task_by_url(&task.url).await {
+            return Ok(existing_task);
+        }
+
+        // 如果不存在，创建新任务
         let record = DownloadTaskRecord::from_task(task)?;
 
         sqlx::query(
@@ -47,7 +53,23 @@ impl DownloadRepository {
         .execute(self.db.connection()?.pool())
         .await?;
 
-        Ok(())
+        Ok(task.clone())
+    }
+
+    /// 根据URL获取任务
+    pub async fn get_task_by_url(&self, url: &str) -> Result<DownloadTask> {
+        let record: DownloadTaskRecord = sqlx::query_as(
+            "SELECT id, url, target_path, status, created_at, updated_at FROM download_tasks WHERE url = ? LIMIT 1"
+        )
+        .bind(url)
+        .fetch_one(self.db.connection()?.pool())
+        .await
+        .map_err(|e| match e {
+            sqlx::Error::RowNotFound => DownloadDbError::TaskNotFound(url.to_string()),
+            e => DownloadDbError::Sqlx(e),
+        })?;
+
+        Ok(record.to_task().map_err(|e| DownloadDbError::Other(e))?)
     }
 
     /// 根据ID获取任务
@@ -223,11 +245,60 @@ mod tests {
             PathBuf::from("/downloads/file.zip")
         );
 
-        repo.save_task(&task).await.unwrap();
+        let saved_task = repo.save_task(&task).await.unwrap();
+        assert_eq!(saved_task.id, task.id);
+        assert_eq!(saved_task.url, task.url);
 
         let retrieved = repo.get_task(&task.id).await.unwrap();
         assert_eq!(retrieved.id, task.id);
         assert_eq!(retrieved.url, task.url);
+    }
+
+    #[tokio::test]
+    async fn test_save_task_duplicate_url() {
+        let repo = setup_repo().await;
+
+        let task1 = DownloadTask::new(
+            "https://example.com/file.zip".to_string(),
+            PathBuf::from("/downloads/file1.zip")
+        );
+        let task2 = DownloadTask::new(
+            "https://example.com/file.zip".to_string(), // 相同的URL
+            PathBuf::from("/downloads/file2.zip")       // 不同的路径
+        );
+
+        // 保存第一个任务
+        let saved_task1 = repo.save_task(&task1).await.unwrap();
+        assert_eq!(saved_task1.id, task1.id);
+
+        // 保存第二个任务（相同URL），应该返回第一个任务
+        let saved_task2 = repo.save_task(&task2).await.unwrap();
+        assert_eq!(saved_task2.id, task1.id); // 应该返回第一个任务的ID
+        assert_eq!(saved_task2.url, task1.url);
+
+        // 验证数据库中只有一条记录
+        let count = repo.count_tasks().await.unwrap();
+        assert_eq!(count, 1);
+    }
+
+    #[tokio::test]
+    async fn test_get_task_by_url() {
+        let repo = setup_repo().await;
+
+        let task = DownloadTask::new(
+            "https://example.com/file.zip".to_string(),
+            PathBuf::from("/downloads/file.zip")
+        );
+
+        repo.save_task(&task).await.unwrap();
+
+        let retrieved = repo.get_task_by_url(&task.url).await.unwrap();
+        assert_eq!(retrieved.id, task.id);
+        assert_eq!(retrieved.url, task.url);
+
+        // 测试不存在的URL
+        let result = repo.get_task_by_url("https://nonexistent.com/file.zip").await;
+        assert!(result.is_err());
     }
 
     #[tokio::test]
