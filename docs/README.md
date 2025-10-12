@@ -1,10 +1,82 @@
-# burncloud-database-download 文档
+# burncloud-database-download 项目文档
+
+## 文档目录
+
+本项目的文档分为以下几个部分：
+
+### 📋 [架构总览](./architecture_overview.md)
+- 项目整体架构设计
+- 模块依赖关系
+- 数据流转图
+- 错误处理策略
+- 性能优化方案
+- 测试策略
+- 部署和监控
+- 扩展规划
+
+### 🗃️ [数据模型流程图](./models_flowcharts.md)
+- `DownloadTaskRecord` 转换函数流程图
+- `DownloadProgressRecord` 转换函数流程图
+- 类型安全转换机制
+- 错误处理策略
+- 时间处理机制
+
+### 🏗️ [数据库架构流程图](./schema_flowcharts.md)
+- `initialize_schema` 函数流程图
+- 数据库表结构设计
+- 表关系图
+- 索引策略
+- 数据库约束
+- 初始化流程关键点
+
+### 📚 [数据仓库流程图](./repository_flowcharts.md)
+- 构造和初始化函数
+- 任务管理函数
+- 进度管理函数
+- 统计和管理函数
+- Repository 模式
+- UPSERT 模式
+- 错误传播链
+- 类型转换安全
+
+## 快速导航
+
+### 按功能模块浏览
+- **数据模型**: [models_flowcharts.md](./models_flowcharts.md)
+- **数据库架构**: [schema_flowcharts.md](./schema_flowcharts.md)
+- **数据访问层**: [repository_flowcharts.md](./repository_flowcharts.md)
+
+### 按关注点浏览
+- **架构设计**: [architecture_overview.md](./architecture_overview.md)
+- **函数实现**: 各模块流程图文档
+- **错误处理**: 所有文档中的错误处理部分
+- **性能优化**: [architecture_overview.md](./architecture_overview.md#性能优化策略)
+
+## 文档约定
+
+### 流程图说明
+- 🟢 绿色节点：成功结束
+- 🔴 红色节点：错误结束
+- 🔵 蓝色节点：开始节点
+- 🟡 黄色节点：决策节点
+
+### Mermaid 图表类型
+- `flowchart`: 流程图
+- `erDiagram`: 实体关系图
+- `graph`: 关系图
+
+## 如何使用这些文档
+
+1. **新团队成员**: 从 [架构总览](./architecture_overview.md) 开始了解项目整体设计
+2. **功能开发**: 参考对应模块的流程图文档了解具体实现
+3. **问题排查**: 查看错误处理流程图和类型转换说明
+4. **性能优化**: 参考架构文档中的优化策略部分
 
 ## 项目概述
 
 `burncloud-database-download` 是一个专门用于下载任务数据库持久化的 Rust 库，负责将下载任务数据存储到 SQLite 数据库中。该库提供了完整的下载任务和进度跟踪功能的数据持久化解决方案。
 
-## 项目结构
+### 项目结构
 
 ```
 src/
@@ -14,46 +86,18 @@ src/
 ├── repository.rs   # 数据仓库，核心CRUD操作实现
 └── schema.rs       # 数据库模式，表结构和索引定义
 
+tests/
+├── schema_tests.rs    # 数据库架构测试
+├── models_tests.rs    # 数据模型测试
+└── repository_tests.rs # 数据仓库测试
+
 docs/
-├── README.md       # 本文档，项目总览
-├── lib.md          # lib.rs 文档
-├── error.md        # error.rs 文档
-├── models.md       # models.rs 文档
-├── repository.md   # repository.rs 文档
-└── schema.md       # schema.rs 文档
+├── README.md                    # 本文档，项目和文档总览
+├── architecture_overview.md     # 项目架构总览
+├── models_flowcharts.md        # 数据模型流程图
+├── schema_flowcharts.md        # 数据库架构流程图
+└── repository_flowcharts.md    # 数据仓库流程图
 ```
-
-## 核心模块文档
-
-### [lib.rs - 库入口文件](./lib.md)
-- 模块结构定义
-- 公共接口导出
-- 依赖重新导出
-- 使用示例
-
-### [error.rs - 错误处理模块](./error.md)
-- DownloadDbError 错误类型定义
-- 错误变体详细说明
-- 错误转换机制
-- 错误处理模式
-
-### [models.rs - 数据模型模块](./models.md)
-- DownloadTaskRecord 任务记录结构
-- DownloadProgressRecord 进度记录结构
-- 数据库记录与业务对象转换方法
-- 类型转换和序列化处理
-
-### [repository.rs - 数据仓库模块](./repository.md)
-- DownloadRepository 主要实现
-- 完整的 CRUD 操作
-- 任务和进度管理方法
-- 统计和管理功能
-
-### [schema.rs - 数据库模式模块](./schema.md)
-- 数据库表结构定义
-- 性能优化索引
-- 初始化函数
-- 数据类型映射
 
 ## 主要功能特性
 
