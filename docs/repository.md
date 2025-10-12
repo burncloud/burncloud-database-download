@@ -284,6 +284,7 @@ let repo = DownloadRepository::new(database);
 repo.initialize().await?;
 
 // 3. 保存任务
+// 注意：DownloadTask::new 在碰到重复的下载链接时，会直接返回已存在的 task-id
 let task = DownloadTask::new(url, path);
 repo.save_task(&task).await?;
 

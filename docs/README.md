@@ -59,6 +59,7 @@ docs/
 
 ### 下载任务管理
 - ✅ 任务创建和保存
+- ✅ 重复链接检测：`DownloadTask::new` 函数在碰到重复的下载链接时，会直接返回已存在的 task-id
 - ✅ 任务状态跟踪
 - ✅ 任务查询和列表
 - ✅ 按状态筛选任务
@@ -81,6 +82,37 @@ docs/
 - ✅ 自动错误转换
 - ✅ 详细错误信息
 - ✅ 优雅的错误传播
+
+## 重复链接处理机制
+
+### DownloadTask::new 重复检测
+
+`DownloadTask::new` 函数实现了智能的重复链接检测机制：
+
+1. **重复检测逻辑**: 在创建新任务时，会检查数据库中是否已存在相同的下载链接
+2. **返回行为**:
+   - 如果是新链接：创建新的任务，返回新的 task-id
+   - 如果是重复链接：直接返回已存在任务的 task-id，不创建重复任务
+3. **比较标准**: 基于完整的下载 URL 进行匹配
+4. **性能优化**: 使用数据库索引确保快速的重复检测
+
+### 使用示例
+
+```rust
+// 第一次调用 - 创建新任务
+let task1 = DownloadTask::new(
+    "https://example.com/file.zip".to_string(),
+    PathBuf::from("/downloads/file.zip")
+);
+println!("Task ID: {}", task1.id); // 输出: 新的 UUID
+
+// 第二次调用相同 URL - 返回已存在的任务
+let task2 = DownloadTask::new(
+    "https://example.com/file.zip".to_string(),  // 相同的 URL
+    PathBuf::from("/downloads/another_path.zip") // 不同的路径也会返回相同任务
+);
+println!("Task ID: {}", task2.id); // 输出: 与 task1.id 相同的 UUID
+```
 
 ## 快速开始
 
@@ -118,6 +150,7 @@ async fn main() -> Result<()> {
     repo.initialize().await?;
 
     // 创建下载任务
+    // 注意：DownloadTask::new 在碰到重复的下载链接时，会直接返回已存在的 task-id
     let task = DownloadTask::new(
         "https://example.com/file.zip".to_string(),
         PathBuf::from("/downloads/file.zip")

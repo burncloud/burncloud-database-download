@@ -45,6 +45,7 @@
 
 **使用示例**:
 ```rust
+// 注意：DownloadTask::new 在碰到重复的下载链接时，会直接返回已存在的 task-id
 let task = DownloadTask::new("https://example.com/file.zip", "/downloads/file.zip");
 let record = DownloadTaskRecord::from_task(&task)?;
 ```
