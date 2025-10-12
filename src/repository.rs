@@ -230,16 +230,22 @@ mod tests {
     use std::path::PathBuf;
 
     async fn setup_repo() -> (DownloadRepository, PathBuf) {
-        // 注意：新的API只支持默认数据库路径，无法指定自定义路径
-        // 我们使用默认数据库，但在测试中清理数据
-        let test_db_path = PathBuf::from("test_database_placeholder.db"); // 只用于返回值，实际不使用
+        // 使用默认数据库，但在每个测试中完全清理数据来确保测试隔离
+        // 这需要在测试开始时立即清理，并使用锁来确保串行执行
+        use std::sync::Mutex;
+        use std::sync::OnceLock;
+
+        static TEST_LOCK: OnceLock<Mutex<()>> = OnceLock::new();
+        let _guard = TEST_LOCK.get_or_init(|| Mutex::new(())).lock().unwrap();
+
+        let test_db_path = PathBuf::from("default_database.db");
 
         let db = Database::new().await.unwrap();
         let repo = DownloadRepository::new(db);
         repo.initialize().await.unwrap();
 
         // 清理数据库确保测试隔离
-        let _ = repo.clear_all().await;
+        repo.clear_all().await.unwrap();
 
         (repo, test_db_path)
     }
