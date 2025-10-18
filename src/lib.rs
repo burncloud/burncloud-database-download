@@ -50,11 +50,16 @@ impl DownloadDB {
         Ok(())
     }
 
-    pub async fn add(&self, gid: &str, uris: Vec<String>) -> Result<()> {
+    pub async fn add(&self, gid: &str, uris: Vec<String>, download_dir: Option<&str>, filename: Option<&str>) -> Result<()> {
         let uris_json = serde_json::to_string(&uris).unwrap();
         self.db.execute_query_with_params(
-            "INSERT INTO downloads (gid, uris) VALUES (?, ?)",
-            vec![gid.to_string(), uris_json]
+            "INSERT INTO downloads (gid, uris, download_dir, filename) VALUES (?, ?, ?, ?)",
+            vec![
+                gid.to_string(),
+                uris_json,
+                download_dir.unwrap_or("").to_string(),
+                filename.unwrap_or("").to_string()
+            ]
         ).await?;
         Ok(())
     }
