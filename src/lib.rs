@@ -99,6 +99,14 @@ impl DownloadDB {
         Ok(())
     }
 
+    pub async fn update_gid(&self, old_gid: &str, new_gid: &str) -> Result<()> {
+        self.db.execute_query_with_params(
+            "UPDATE downloads SET gid = ?, updated_at = CURRENT_TIMESTAMP WHERE gid = ?",
+            vec![new_gid.to_string(), old_gid.to_string()]
+        ).await?;
+        Ok(())
+    }
+
     pub async fn get(&self, gid: &str) -> Result<Option<Download>> {
         self.db.fetch_optional::<Download>(
             &format!("SELECT * FROM downloads WHERE gid = '{}'", gid)
