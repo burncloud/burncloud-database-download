@@ -65,8 +65,10 @@ impl DownloadDB {
         ).await?;
 
         if existing.is_some() {
-            
-            return Ok(());
+            return self.db.execute_query_with_params(
+                "UPDATE downloads SET gid = ? WHERE uris = ? AND download_dir = ?",
+                vec![gid.to_string(), uris_json.clone(), download_dir_str.clone()]
+            ).await.map(|_| ());
         }
 
         self.db.execute_query_with_params(
