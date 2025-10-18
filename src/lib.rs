@@ -1,7 +1,7 @@
 use burncloud_database::{Database, Result};
 use serde::{Deserialize, Serialize};
 
-#[derive(sqlx::FromRow, Serialize, Deserialize)]
+#[derive(sqlx::FromRow, Serialize, Deserialize, Clone)]
 pub struct Download {
     pub gid: String,
     pub status: String,
@@ -56,13 +56,25 @@ impl DownloadDB {
         }
 
         let uris_json = serde_json::to_string(&uris).unwrap();
+        let download_dir_str = download_dir.unwrap_or("").to_string();
+
+        // 检查相同的uris和download_dir组合是否已存在
+        let existing = self.db.fetch_optional::<Download>(
+            &format!("SELECT * FROM downloads WHERE uris = '{}' AND download_dir = '{}'",
+                uris_json.replace("'", "''"), download_dir_str.replace("'", "''"))
+        ).await?;
+
+        if existing.is_some() {
+            
+            return Ok(());
+        }
 
         self.db.execute_query_with_params(
             "INSERT INTO downloads (gid, uris, download_dir, filename) VALUES (?, ?, ?, ?)",
             vec![
                 gid.to_string(),
                 uris_json,
-                download_dir.unwrap_or("").to_string(),
+                download_dir_str,
                 filename.unwrap_or("").to_string()
             ]
         ).await?;
